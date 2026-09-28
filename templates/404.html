@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found – FitBuddy{% endblock %}
+
+{% block content %}
+<div class="form-card" style="max-width: 520px; text-align: center; margin-top: 3rem;">
+  <div style="font-size: 3.5rem; margin-bottom: 0.5rem; color: var(--accent-cyan); font-weight: 900;">
+    404
+  </div>
+  <h2 style="font-size: 1.4rem; margin-bottom: 0.75rem;">Page Not Found</h2>
+  <p style="color: var(--text-secondary); margin-bottom: 1.75rem; font-size: 0.95rem;">
+    {{ message or "The page or athlete workout record you requested does not exist." }}
+  </p>
+  <div style="display: flex; gap: 1rem; justify-content: center;">
+    <a href="/" class="btn btn-primary">
+      <span>&#8592;</span> Return to Home
+    </a>
+    <a href="/view-all-users" class="btn btn-secondary">
+      Admin Dashboard
+    </a>
+  </div>
+</div>
+{% endblock %}

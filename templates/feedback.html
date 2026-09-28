@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Update Workout Plan for {{ user.username }} – FitBuddy{% endblock %}
+
+{% block content %}
+<section class="form-card" style="max-width: 680px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem;">
+    <h2 class="card-title" style="margin-bottom: 0;">
+      <span>&#128260;</span> Adapt Your 7-Day Plan
+    </h2>
+    <span class="badge badge-green">User ID: {{ user.user_id }}</span>
+  </div>
+
+  <p style="color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 1.5rem;">
+    Tell FitBuddy how you would like to refine your plan. Our AI will restructure the 7 days while preserving your original workout record permanently in the database.
+  </p>
+
+  {% if error %}
+  <div class="alert alert-error" role="alert">
+    <span>&#9888;</span>
+    <div>{{ error }}</div>
+  </div>
+  {% endif %}
+
+  <!-- User Profile Context Brief -->
+  <div style="background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.5rem; font-size: 0.88rem; color: var(--text-secondary);">
+    <strong style="color: var(--text-primary);">Current Profile:</strong>
+    {{ user.username }} &bull; Goal: <strong>{{ user.goal }}</strong> &bull; Intensity: <strong>{{ user.intensity }}</strong> &bull; {{ user.weight }} kg
+  </div>
+
+  <form id="feedbackForm" action="/submit-feedback" method="POST">
+    <input type="hidden" name="user_id" value="{{ user.user_id }}">
+
+    <div class="form-group" style="margin-bottom: 1.25rem;">
+      <label for="feedback" class="form-label">
+        What adjustments would you like? <span class="req">*</span>
+      </label>
+      <textarea
+        id="feedback"
+        name="feedback"
+        class="form-control"
+        rows="4"
+        placeholder="e.g., Please add more cardiovascular endurance intervals, swap heavy squats with bodyweight lunges, and include gentle yoga on recovery days."
+        required
+        minlength="3"
+        maxlength="1000"
+      >{{ existing_feedback if existing_feedback else '' }}</textarea>
+      <span class="form-hint">Character limit: 3 – 1000 characters.</span>
+    </div>
+
+    <!-- Quick Feedback Chips -->
+    <div style="margin-bottom: 1.75rem;">
+      <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
+        Quick Suggestion Chips (Click to Add):
+      </span>
+      <div class="feedback-chips-container">
+        <button type="button" class="feedback-chip" data-text="Add more cardio intervals">
+          + Add more cardio
+        </button>
+        <button type="button" class="feedback-chip" data-text="Include two full rest days for recovery">
+          + Two rest days
+        </button>
+        <button type="button" class="feedback-chip" data-text="Make daily workouts shorter (under 30 minutes)">
+          + Shorter workouts
+        </button>
+        <button type="button" class="feedback-chip" data-text="Focus more on upper body and core">
+          + Focus on upper body
+        </button>
+        <button type="button" class="feedback-chip" data-text="Focus more on legs and lower body strength">
+          + Focus on legs
+        </button>
+        <button type="button" class="feedback-chip" data-text="Include gentle yoga and mobility work">
+          + Include yoga
+        </button>
+      </div>
+    </div>
+
+    <!-- AI Safety Notice -->
+    <div style="background-color: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.25); border-radius: var(--radius-md); padding: 0.85rem 1rem; margin-bottom: 1.75rem; font-size: 0.82rem; color: #7dd3fc; display: flex; gap: 0.6rem; align-items: flex-start;">
+      <span style="font-size: 1.1rem; flex-shrink: 0;">&#9888;</span>
+      <div>
+        <strong>Safety Note:</strong> AI-generated workout plans provide general fitness guidance and should be adapted to individual physical capabilities. Requests for unsafe or extreme training volumes will be automatically calibrated for safety.
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+      <button type="submit" class="btn btn-primary" style="flex: 2;">
+        <span>&#9889;</span> Update My Plan
+      </button>
+      <a href="/result/{{ user.user_id }}" class="btn btn-secondary" style="flex: 1;">
+        Cancel
+      </a>
+    </div>
+  </form>
+</section>
+{% endblock %}

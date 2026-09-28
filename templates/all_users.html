@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard – All Registered Athletes – FitBuddy{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <h1 style="font-size: 2rem; font-weight: 800; display: flex; align-items: center; gap: 0.6rem;">
+      <span>&#128101;</span> Athletes &amp; Plans Dashboard
+    </h1>
+    <p style="color: var(--text-secondary); font-size: 0.95rem;">
+      Manage registered athletes, monitor plan updates, and review generated routines.
+    </p>
+  </div>
+
+  <div style="display: flex; gap: 1rem; align-items: center;">
+    <span class="badge badge-gray" style="padding: 0.45rem 0.85rem;">
+      Signed in as: <strong>{{ admin_user }}</strong>
+    </span>
+    <form action="/admin/logout" method="POST" style="margin: 0;">
+      <button type="submit" class="btn btn-secondary" style="padding: 0.45rem 0.9rem; font-size: 0.85rem;">
+        Log Out
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Metrics Quick Summary -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+  <div class="card" style="padding: 1.25rem;">
+    <div style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; font-weight: 700;">
+      Total Registered Users
+    </div>
+    <div style="font-size: 1.85rem; font-weight: 800; color: var(--accent-green); margin-top: 0.25rem;">
+      {{ total_users }}
+    </div>
+  </div>
+</div>
+
+<!-- Search & Filter Toolbar -->
+<div class="admin-toolbar">
+  <div class="admin-search-box">
+    <span class="search-icon">&#128269;</span>
+    <input
+      type="text"
+      id="adminUserSearch"
+      class="form-control"
+      placeholder="Search by name, user ID, goal..."
+      aria-label="Filter athletes table"
+    >
+  </div>
+  <div id="userMatchCount" style="color: var(--text-muted); font-size: 0.88rem;">
+    Showing {{ user_rows|length }} user(s)
+  </div>
+</div>
+
+<!-- Responsive Table -->
+<div class="admin-table-container">
+  {% if user_rows and user_rows|length > 0 %}
+  <table id="usersTable" class="admin-table" aria-label="Registered Athletes Table">
+    <thead>
+      <tr>
+        <th scope="col">Athlete</th>
+        <th scope="col">User ID</th>
+        <th scope="col">Age / Weight</th>
+        <th scope="col">Goal</th>
+        <th scope="col">Intensity</th>
+        <th scope="col">Original Plan</th>
+        <th scope="col">Updated Plan</th>
+        <th scope="col">Registered</th>
+        <th scope="col" style="text-align: right;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in user_rows %}
+      <tr>
+        <td style="font-weight: 600; color: var(--text-primary);">
+          <a href="/user/{{ item.user.user_id }}" style="color: inherit; text-decoration: none;">
+            {{ item.user.username }}
+          </a>
+        </td>
+        <td>
+          <code>{{ item.user.user_id }}</code>
+        </td>
+        <td>
+          {{ item.user.age }} yrs / {{ item.user.weight }} kg
+        </td>
+        <td>
+          <span class="badge badge-green">{{ item.user.goal }}</span>
+        </td>
+        <td>
+          <span class="badge badge-cyan">{{ item.user.intensity }}</span>
+        </td>
+        <td>
+          {% if item.has_original %}
+            <span class="badge badge-green">Ready</span>
+          {% else %}
+            <span class="badge badge-gray">None</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if item.has_updated %}
+            <span class="badge badge-orange">Revised</span>
+          {% else %}
+            <span class="badge badge-gray">Original Only</span>
+          {% endif %}
+        </td>
+        <td style="color: var(--text-muted); font-size: 0.82rem;">
+          {{ item.created_date }}
+        </td>
+        <td style="text-align: right;">
+          <div class="admin-actions" style="justify-content: flex-end;">
+            <a href="/user/{{ item.user.user_id }}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.82rem;" title="View plan details">
+              View
+            </a>
+            <form action="/delete-user/{{ item.user.user_id }}" method="POST" onsubmit="return confirmDeleteUser('{{ item.user.username }}', '{{ item.user.user_id }}');" style="margin: 0; display: inline;">
+              <button type="submit" class="btn btn-danger" style="padding: 0.35rem 0.75rem; font-size: 0.82rem;" title="Delete user and plans">
+                Delete
+              </button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div style="text-align: center; padding: 3rem 1.5rem;">
+    <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">&#128221;</div>
+    <h3 style="font-size: 1.15rem; margin-bottom: 0.35rem;">No Athletes Registered Yet</h3>
+    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.25rem;">
+      When users generate their first workout plans, they will appear here in the dashboard.
+    </p>
+    <a href="/#create" class="btn btn-primary">Generate First Plan</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

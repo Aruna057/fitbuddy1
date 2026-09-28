@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}Athlete Details – {{ user.username }} – FitBuddy Admin{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+  <div>
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.35rem;">
+      <a href="/view-all-users" class="btn btn-secondary" style="padding: 0.35rem 0.7rem; font-size: 0.8rem;">
+        &larr; Back to Dashboard
+      </a>
+      <h1 style="font-size: 1.85rem; font-weight: 800; margin: 0;">
+        {{ user.username }}
+      </h1>
+      <span class="badge badge-green"><code>{{ user.user_id }}</code></span>
+    </div>
+    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+      Complete athlete dossier, AI workout plan history, and feedback records.
+    </p>
+  </div>
+
+  <div style="display: flex; gap: 0.75rem;">
+    <a href="/result/{{ user.user_id }}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+      <span>&#128065;</span> View Public Plan Page
+    </a>
+  </div>
+</div>
+
+<!-- Profile Info Card -->
+<section class="card" style="margin-bottom: 2rem;">
+  <h2 class="card-title">
+    <span>&#128100;</span> Biometric &amp; Training Profile
+  </h2>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.25rem;">
+    <div>
+      <span class="stat-label">Full Name</span>
+      <div class="stat-value">{{ user.username }}</div>
+    </div>
+    <div>
+      <span class="stat-label">User ID</span>
+      <div class="stat-value"><code>{{ user.user_id }}</code></div>
+    </div>
+    <div>
+      <span class="stat-label">Age</span>
+      <div class="stat-value">{{ user.age }} years</div>
+    </div>
+    <div>
+      <span class="stat-label">Weight</span>
+      <div class="stat-value">{{ user.weight }} kg</div>
+    </div>
+    <div>
+      <span class="stat-label">Fitness Goal</span>
+      <div class="stat-value"><span class="badge badge-green">{{ user.goal }}</span></div>
+    </div>
+    <div>
+      <span class="stat-label">Intensity Level</span>
+      <div class="stat-value"><span class="badge badge-cyan">{{ user.intensity }}</span></div>
+    </div>
+    <div>
+      <span class="stat-label">Registered At</span>
+      <div style="color: var(--text-secondary); font-size: 0.9rem;">
+        {{ user.created_at.strftime("%Y-%m-%d %H:%M:%S") if user.created_at else "N/A" }}
+      </div>
+    </div>
+    <div>
+      <span class="stat-label">Last Updated</span>
+      <div style="color: var(--text-secondary); font-size: 0.9rem;">
+        {{ plan_record.updated_at.strftime("%Y-%m-%d %H:%M:%S") if plan_record and plan_record.updated_at else "N/A" }}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Nutrition Tip -->
+{% if plan_record and plan_record.nutrition_tip %}
+<section class="nutrition-card" style="margin-bottom: 2rem;">
+  <div class="nutrition-icon">&#127822;</div>
+  <div class="nutrition-text">
+    <h4>Assigned Nutrition &amp; Recovery Guidance</h4>
+    <p>{{ plan_record.nutrition_tip }}</p>
+  </div>
+</section>
+{% endif %}
+
+<!-- Feedback Details (if any) -->
+{% if plan_record and plan_record.feedback %}
+<section class="card" style="margin-bottom: 2rem; border-color: rgba(245, 158, 11, 0.4);">
+  <h2 class="card-title" style="color: #fbbf24;">
+    <span>&#128172;</span> Athlete Feedback Recorded
+  </h2>
+  <div style="background-color: var(--bg-input); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); color: #fde68a; font-size: 0.95rem;">
+    "{{ plan_record.feedback }}"
+  </div>
+</section>
+{% endif %}
+
+<!-- Plans Comparison Section -->
+<div style="display: grid; grid-template-columns: 1fr; gap: 2rem;">
+  <!-- Updated Plan (if exists) -->
+  {% if updated_plan %}
+  <section class="card" style="border-color: rgba(16, 185, 129, 0.4);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
+      <h2 class="card-title" style="margin: 0; color: var(--accent-green);">
+        <span>&#9889;</span> Revised Workout Plan (Active)
+      </h2>
+      <span class="badge badge-green">Generated from Feedback</span>
+    </div>
+
+    <div class="days-container" style="margin-bottom: 0;">
+      {% for day in updated_plan.days %}
+      <div class="day-card">
+        <div class="day-header">
+          <span class="day-badge">{{ day.day }}</span>
+          <span class="day-focus">{{ day.focus }}</span>
+        </div>
+        <div class="day-body">
+          <div style="margin-bottom: 0.75rem;">
+            <strong style="color: var(--accent-cyan); font-size: 0.8rem; text-transform: uppercase;">Warmup:</strong>
+            <span style="color: var(--text-secondary); font-size: 0.9rem;">{{ day.warmup }}</span>
+          </div>
+
+          <table class="exercises-table">
+            <thead>
+              <tr>
+                <th>Exercise</th>
+                <th>Sets</th>
+                <th>Reps / Duration</th>
+                <th>Rest</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ex in day.exercises %}
+              <tr>
+                <td class="exercise-name">{{ ex.name }}</td>
+                <td>{{ ex.sets if ex.sets is not none else '—' }}</td>
+                <td>{{ ex.reps or ex.duration or '—' }}</td>
+                <td>{{ ex.rest or 'As needed' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <div>
+            <strong style="color: var(--accent-green); font-size: 0.8rem; text-transform: uppercase;">Cooldown:</strong>
+            <span style="color: var(--text-secondary); font-size: 0.9rem;">{{ day.cooldown }}</span>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- Original Plan (Permanently Preserved) -->
+  {% if original_plan %}
+  <section class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
+      <h2 class="card-title" style="margin: 0;">
+        <span>&#128220;</span> Original Workout Plan
+      </h2>
+      <span class="badge badge-gray">Permanently Preserved</span>
+    </div>
+
+    <div class="days-container" style="margin-bottom: 0;">
+      {% for day in original_plan.days %}
+      <div class="day-card">
+        <div class="day-header">
+          <span class="day-badge">{{ day.day }}</span>
+          <span class="day-focus">{{ day.focus }}</span>
+        </div>
+        <div class="day-body">
+          <div style="margin-bottom: 0.75rem;">
+            <strong style="color: var(--accent-cyan); font-size: 0.8rem; text-transform: uppercase;">Warmup:</strong>
+            <span style="color: var(--text-secondary); font-size: 0.9rem;">{{ day.warmup }}</span>
+          </div>
+
+          <table class="exercises-table">
+            <thead>
+              <tr>
+                <th>Exercise</th>
+                <th>Sets</th>
+                <th>Reps / Duration</th>
+                <th>Rest</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ex in day.exercises %}
+              <tr>
+                <td class="exercise-name">{{ ex.name }}</td>
+                <td>{{ ex.sets if ex.sets is not none else '—' }}</td>
+                <td>{{ ex.reps or ex.duration or '—' }}</td>
+                <td>{{ ex.rest or 'As needed' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <div>
+            <strong style="color: var(--accent-green); font-size: 0.8rem; text-transform: uppercase;">Cooldown:</strong>
+            <span style="color: var(--text-secondary); font-size: 0.9rem;">{{ day.cooldown }}</span>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Workout Plan for {{ user.username }} – FitBuddy{% endblock %}
+
+{% block content %}
+<div class="result-header">
+  {% if just_updated %}
+  <div class="alert alert-success" role="alert">
+    <span style="font-size: 1.25rem;">&#10004;</span>
+    <div>
+      <strong>Success:</strong> Your workout plan has been updated based on your feedback while your original plan remains safely preserved.
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- User Profile & Plan Meta Bar -->
+  <div class="user-profile-bar">
+    <div class="user-stat-group">
+      <div class="stat-item">
+        <span class="stat-label">Athlete</span>
+        <span class="stat-value">{{ user.username }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">User ID</span>
+        <span class="stat-value"><code>{{ user.user_id }}</code></span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Age / Weight</span>
+        <span class="stat-value">{{ user.age }} yrs / {{ user.weight }} kg</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Goal</span>
+        <span class="stat-value">
+          <span class="badge badge-green">{{ user.goal }}</span>
+        </span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Intensity</span>
+        <span class="stat-value">
+          <span class="badge badge-cyan">{{ user.intensity }}</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Plan Version Indicator & Toggle -->
+    <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+      {% if has_updated %}
+      <div class="plan-version-toggle" aria-label="Plan Version Switcher">
+        <a
+          href="/result/{{ user.user_id }}?view=updated"
+          class="toggle-tab {% if active_mode == 'updated' %}active{% endif %}"
+        >
+          Updated Plan (Revised)
+        </a>
+        <a
+          href="/result/{{ user.user_id }}?view=original"
+          class="toggle-tab {% if active_mode == 'original' %}active{% endif %}"
+        >
+          Original Plan
+        </a>
+      </div>
+      {% else %}
+      <span class="badge badge-green" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+        &#9733; Original Plan
+      </span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Nutrition & Recovery Tip Highlight Card -->
+{% if nutrition_tip %}
+<section class="nutrition-card" aria-label="Nutrition and Recovery Tip">
+  <div class="nutrition-icon">&#127822;</div>
+  <div class="nutrition-text">
+    <h4>Evidence-Based Nutrition &amp; Recovery Guidance</h4>
+    <p>{{ nutrition_tip }}</p>
+  </div>
+</section>
+{% endif %}
+
+<!-- Feedback Notice (if viewing updated plan) -->
+{% if active_mode == 'updated' and feedback %}
+<div class="feedback-notice-card" role="note">
+  <span style="font-size: 1.3rem;">&#128172;</span>
+  <div>
+    <strong>Adjusted based on your feedback:</strong> "{{ feedback }}"
+  </div>
+</div>
+{% endif %}
+
+<!-- 7-Day Workout Routine Cards -->
+<section class="days-container" aria-label="7-Day Workout Program">
+  <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.6rem;">
+    <span>&#128197;</span> Your 7-Day Personalized Schedule
+  </h2>
+
+  {% if active_plan and active_plan.days %}
+    {% for day in active_plan.days %}
+    <article class="day-card">
+      <div class="day-header">
+        <div class="day-title-wrap">
+          <span class="day-badge">{{ day.day }}</span>
+          <span class="day-focus">{{ day.focus }}</span>
+        </div>
+      </div>
+
+      <div class="day-body">
+        <!-- Warmup -->
+        <div class="routine-phase">
+          <div class="phase-title">
+            <span>&#9832;</span> Dynamic Warm-up &amp; Mobility
+          </div>
+          <p class="phase-content">{{ day.warmup }}</p>
+        </div>
+
+        <!-- Exercises Table -->
+        {% if day.exercises and day.exercises|length > 0 %}
+        <div style="overflow-x: auto;">
+          <table class="exercises-table" aria-label="Scheduled Exercises for {{ day.day }}">
+            <thead>
+              <tr>
+                <th scope="col" style="width: 40%;">Exercise</th>
+                <th scope="col" style="width: 15%;">Sets</th>
+                <th scope="col" style="width: 25%;">Reps / Duration</th>
+                <th scope="col" style="width: 20%;">Rest</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ex in day.exercises %}
+              <tr>
+                <td class="exercise-name">{{ ex.name }}</td>
+                <td>{{ ex.sets if ex.sets is not none else '—' }}</td>
+                <td>
+                  {% if ex.reps %}
+                    {{ ex.reps }} reps
+                  {% elif ex.duration %}
+                    {{ ex.duration }}
+                  {% else %}
+                    Target as tolerated
+                  {% endif %}
+                </td>
+                <td style="color: var(--accent-cyan);">{{ ex.rest if ex.rest else 'As needed' }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p style="color: var(--text-muted); font-style: italic; margin: 1rem 0;">
+          Rest and recovery day. Focus on gentle mobility, light walking, and adequate hydration.
+        </p>
+        {% endif %}
+
+        <!-- Cooldown -->
+        <div class="routine-phase" style="margin-top: 1rem; margin-bottom: 0;">
+          <div class="phase-title" style="color: var(--accent-green);">
+            <span>&#10052;</span> Cool-down &amp; Flexibility Recovery
+          </div>
+          <p class="phase-content">{{ day.cooldown }}</p>
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  {% else %}
+    <div class="card" style="text-align: center; padding: 3rem;">
+      <p style="color: var(--text-secondary);">Workout plan structure could not be rendered.</p>
+    </div>
+  {% endif %}
+</section>
+
+<!-- Action CTA Bar -->
+<section class="action-cta-bar">
+  <div>
+    <h3 style="font-size: 1.15rem; margin-bottom: 0.25rem;">Want to tweak this routine?</h3>
+    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+      Request more cardio, yoga, adjusted rest days, or time limits without losing your original plan.
+    </p>
+  </div>
+  <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+    <a href="/feedback/{{ user.user_id }}" class="btn btn-primary">
+      <span>&#128260;</span> Update My Plan
+    </a>
+    <a href="/" class="btn btn-secondary">
+      <span>+</span> Create New Plan
+    </a>
+  </div>
+</section>
+{% endblock %}

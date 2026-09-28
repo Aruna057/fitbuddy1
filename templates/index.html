@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}FitBuddy – AI Fitness Plan Generator{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="hero-pill">
+    <span>&#9733;</span> Powered by Google Gemini AI
+  </div>
+  <h1 class="hero-title">
+    Your AI-Powered <span class="gradient-text">Fitness Companion</span>
+  </h1>
+  <p class="hero-subtitle">
+    Get an evidence-based, fully personalized 7-day workout routine and tailored nutrition guidance adapted to your specific goals and intensity.
+  </p>
+</section>
+
+<!-- Error / Flash Message Display -->
+{% if error %}
+<div class="alert alert-error" role="alert">
+  <span style="font-size: 1.2rem;">&#9888;</span>
+  <div>
+    <strong>Validation Notice:</strong> {{ error }}
+  </div>
+</div>
+{% endif %}
+
+{% if not has_api_key %}
+<div class="alert alert-info" role="alert">
+  <span style="font-size: 1.2rem;">&#8505;</span>
+  <div>
+    <strong>Demo Mode Active:</strong> No <code>GEMINI_API_KEY</code> detected in <code>.env</code>. FitBuddy will generate structured plans using built-in evidence-based routines. Add your Gemini key to activate live generative AI models.
+  </div>
+</div>
+{% endif %}
+
+<!-- Form Card -->
+<section id="create" class="form-card">
+  <h2 class="card-title" style="margin-bottom: 1.5rem;">
+    <span>&#127947;</span> Enter Your Fitness Profile
+  </h2>
+
+  <form id="workoutForm" action="/generate-workout" method="POST">
+    <div class="form-grid">
+      <!-- Full Name -->
+      <div class="form-group">
+        <label for="username" class="form-label">Full Name / Nickname <span class="req">*</span></label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          class="form-control"
+          placeholder="e.g. Alex Morgan"
+          value="{{ form_data.username if form_data else '' }}"
+          required
+          minlength="2"
+          maxlength="50"
+        >
+        <span class="form-hint">Used to personalize your workout regimen.</span>
+      </div>
+
+      <!-- Unique User ID -->
+      <div class="form-group">
+        <label for="user_id" class="form-label">User ID (Alphanumeric) <span class="req">*</span></label>
+        <input
+          type="text"
+          id="user_id"
+          name="user_id"
+          class="form-control"
+          placeholder="e.g. alex_m24"
+          value="{{ form_data.user_id if form_data else '' }}"
+          required
+          minlength="3"
+          maxlength="30"
+          pattern="[a-zA-Z0-9_\-]+"
+          title="Alphanumeric characters, underscores, and hyphens only."
+        >
+        <span class="form-hint">Unique key to retrieve and update your plans.</span>
+      </div>
+
+      <!-- Age -->
+      <div class="form-group">
+        <label for="age" class="form-label">Age (Years) <span class="req">*</span></label>
+        <input
+          type="number"
+          id="age"
+          name="age"
+          class="form-control"
+          placeholder="e.g. 26"
+          value="{{ form_data.age if form_data else '' }}"
+          required
+          min="13"
+          max="100"
+        >
+        <span class="form-hint">Allowed range: 13 – 100 years.</span>
+      </div>
+
+      <!-- Weight -->
+      <div class="form-group">
+        <label for="weight" class="form-label">Body Weight (kg) <span class="req">*</span></label>
+        <input
+          type="number"
+          step="0.1"
+          id="weight"
+          name="weight"
+          class="form-control"
+          placeholder="e.g. 72.5"
+          value="{{ form_data.weight if form_data else '' }}"
+          required
+          min="20"
+          max="300"
+        >
+        <span class="form-hint">Used to calibrate volume and impact levels.</span>
+      </div>
+
+      <!-- Fitness Goal Dropdown -->
+      <div class="form-group">
+        <label for="goal" class="form-label">Primary Fitness Goal <span class="req">*</span></label>
+        <select id="goal" name="goal" class="form-control" required>
+          <option value="" disabled {% if not form_data or not form_data.goal %}selected{% endif %}>Select your goal</option>
+          <option value="weight loss" {% if form_data and form_data.goal == 'weight loss' %}selected{% endif %}>Weight Loss</option>
+          <option value="muscle gain" {% if form_data and form_data.goal == 'muscle gain' %}selected{% endif %}>Muscle Gain</option>
+          <option value="strength" {% if form_data and form_data.goal == 'strength' %}selected{% endif %}>Strength</option>
+          <option value="endurance" {% if form_data and form_data.goal == 'endurance' %}selected{% endif %}>Endurance</option>
+          <option value="flexibility" {% if form_data and form_data.goal == 'flexibility' %}selected{% endif %}>Flexibility &amp; Mobility</option>
+          <option value="general wellness" {% if form_data and form_data.goal == 'general wellness' %}selected{% endif %}>General Wellness</option>
+        </select>
+        <span class="form-hint">Select the focus for your 7-day program.</span>
+      </div>
+
+      <!-- Workout Intensity -->
+      <div class="form-group">
+        <label for="intensity" class="form-label">Workout Intensity <span class="req">*</span></label>
+        <select id="intensity" name="intensity" class="form-control" required>
+          <option value="" disabled {% if not form_data or not form_data.intensity %}selected{% endif %}>Select intensity</option>
+          <option value="low" {% if form_data and form_data.intensity == 'low' %}selected{% endif %}>Low (Beginner / Light Movement)</option>
+          <option value="medium" {% if not form_data or form_data.intensity == 'medium' %}selected{% endif %}>Medium (Moderate Challenge)</option>
+          <option value="high" {% if form_data and form_data.intensity == 'high' %}selected{% endif %}>High (Advanced / High Demand)</option>
+        </select>
+        <span class="form-hint">Determines volume, reps, and rest periods.</span>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="form-group-full" style="margin-top: 1rem;">
+        <button type="submit" id="submitBtn" class="btn btn-primary btn-block">
+          <span>&#9889;</span> Generate My Plan
+        </button>
+      </div>
+    </div>
+  </form>
+</section>
+
+<!-- Information Highlights -->
+<section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 3.5rem;">
+  <div class="card">
+    <div style="font-size: 2rem; margin-bottom: 0.75rem;">&#128197;</div>
+    <h3 style="font-size: 1.1rem; margin-bottom: 0.4rem; color: var(--accent-green);">Structured 7-Day Plans</h3>
+    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+      Each day includes a targeted focus, dynamic warm-up, precise exercise sets and reps, rest durations, and cool-down routines.
+    </p>
+  </div>
+  <div class="card">
+    <div style="font-size: 2rem; margin-bottom: 0.75rem;">&#129367;</div>
+    <h3 style="font-size: 1.1rem; margin-bottom: 0.4rem; color: var(--accent-cyan);">Evidence-Based Nutrition</h3>
+    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+      Generates concise, goal-aligned nutrition and recovery guidance without dangerous crash diets or extreme advice.
+    </p>
+  </div>
+  <div class="card">
+    <div style="font-size: 2rem; margin-bottom: 0.75rem;">&#128260;</div>
+    <h3 style="font-size: 1.1rem; margin-bottom: 0.4rem; color: #fbbf24;">Adaptive Feedback Loop</h3>
+    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+      Request tweaks like extra rest, cardio, or yoga. FitBuddy regenerates your routine while permanently preserving your original plan.
+    </p>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}FitBuddy – AI Fitness Plan Generator{% endblock %}</title>
+  <meta name="description" content="Generate safe, structured, AI-personalized 7-day fitness plans and nutrition advice.">
+  <link rel="stylesheet" href="/static/css/style.css">
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+
+  <!-- Safety & Medical Disclaimer Banner -->
+  <aside class="safety-banner" aria-label="Medical Disclaimer">
+    <span class="shield-icon" aria-hidden="true">&#9888;</span>
+    <span>
+      <strong>Safety Notice:</strong> FitBuddy provides general fitness and wellness guidance and is not a substitute for professional medical advice.
+    </span>
+  </aside>
+
+  <!-- Navigation Bar -->
+  <header>
+    <nav class="navbar" aria-label="Main Navigation">
+      <div class="nav-container">
+        <a href="/" class="brand-logo" aria-label="FitBuddy Home">
+          <div class="brand-icon" aria-hidden="true">&#9889;</div>
+          <div class="brand-text">FIT<span>BUDDY</span></div>
+        </a>
+        <ul class="nav-links">
+          <li><a href="/" class="nav-link">Home</a></li>
+          <li><a href="/view-all-users" class="nav-link">Admin / Coach</a></li>
+          <li><a href="/docs" target="_blank" rel="noopener noreferrer" class="nav-link">API Docs</a></li>
+          <li><a href="/#create" class="btn-nav">Generate Plan</a></li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Application Body -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Global Animated Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Generating Your 7-Day Routine...</div>
+    <div id="loadingSubtext" class="loading-subtext">Consulting exercise physiology principles...</div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <p>
+        <strong>FITBUDDY</strong> &copy; 2026. AI Fitness Plan Generator powered by Google Gemini &amp; FastAPI.
+      </p>
+      <p>
+        Always consult a qualified physician or trainer before starting any rigorous exercise routine.
+      </p>
+    </div>
+  </footer>
+
+  <script src="/static/js/app.js"></script>
+  {% block scripts_extra %}{% endblock %}
+</body>
+</html>

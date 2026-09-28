@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title or "Error Occurred" }} – FitBuddy{% endblock %}
+
+{% block content %}
+<div class="form-card" style="max-width: 580px; text-align: center; margin-top: 3rem; border-color: var(--danger-border);">
+  <div style="font-size: 3rem; margin-bottom: 0.5rem; color: #f87171;">
+    &#9888;
+  </div>
+  <h2 style="font-size: 1.4rem; margin-bottom: 0.75rem; color: #f87171;">
+    {{ title or "System Notice" }}
+  </h2>
+  <p style="color: var(--text-secondary); margin-bottom: 1.75rem; font-size: 0.95rem; line-height: 1.6;">
+    {{ message or "An unexpected issue was encountered. Please try your request again." }}
+  </p>
+  <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+    <a href="{{ return_url or '/' }}" class="btn btn-primary">
+      <span>&#8592;</span> Go Back
+    </a>
+    <a href="/" class="btn btn-secondary">
+      Home Page
+    </a>
+  </div>
+</div>
+{% endblock %}
